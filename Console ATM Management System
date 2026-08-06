@@ -1,0 +1,114 @@
+class Account:
+    def __init__(self, balance=0):
+        self.balance = balance
+
+    def deposit(self, amount):
+        if amount <= 0:
+            print("Deposit amount must be positive.")
+            return
+        self.balance += amount
+        print(f"Deposited {amount}. New balance: {self.balance}")
+
+    def withdraw(self, amount):
+        if amount <= 0:
+            print("Withdrawal amount must be positive.")
+            return
+        if amount > self.balance:
+            print("Insufficient balance.")
+            return
+        self.balance -= amount
+        print(f"Withdrew {amount}. New balance: {self.balance}")
+
+    def transfer(self, amount, other_account):
+        if amount <= 0:
+            print("Transfer amount must be positive.")
+            return
+        if amount > self.balance:
+            print("Insufficient balance for transfer.")
+            return
+        self.balance -= amount
+        other_account.balance += amount
+        print(f"Transferred {amount} successfully. New balance: {self.balance}")
+
+
+class Customer:
+    def __init__(self, name, customer_id, balance=0):
+        self.name = name
+        self.id = customer_id
+        self.account = Account(balance)
+
+
+class Menu:
+    def display_menu(self):
+        print("\nATM Menu:")
+        print("1. Check Balance")
+        print("2. Deposit")
+        print("3. Withdraw")
+        print("4. Transfer")
+        print("5. Logout")
+
+
+class ATM:
+    def __init__(self):
+        self.customers = {}
+        self.menu = Menu()
+        self.current_customer = None
+
+    def add_customer(self, name, customer_id, balance=0):
+        self.customers[customer_id] = Customer(name, customer_id, balance)
+
+    def login(self):
+        customer_id = input("Enter your customer ID: ")
+        customer = self.customers.get(customer_id)
+        if customer:
+            self.current_customer = customer
+            print(f"Welcome, {customer.name}!")
+            return True
+        else:
+            print("Customer ID not found.")
+            return False
+
+    def start(self):
+        while True:
+            if not self.login():
+                retry = input("Try again? (y/n): ")
+                if retry.lower() != 'y':
+                    print("Exiting ATM system.")
+                    break
+                continue
+
+            self.session()
+
+    def session(self):
+        while True:
+            self.menu.display_menu()
+            choice = input("Enter your choice: ")
+
+            if choice == '1':
+                print(f"Current balance: {self.current_customer.account.balance}")
+            elif choice == '2':
+                amount = float(input("Enter amount to deposit: "))
+                self.current_customer.account.deposit(amount)
+            elif choice == '3':
+                amount = float(input("Enter amount to withdraw: "))
+                self.current_customer.account.withdraw(amount)
+            elif choice == '4':
+                target_id = input("Enter recipient customer ID: ")
+                target_customer = self.customers.get(target_id)
+                if target_customer:
+                    amount = float(input("Enter amount to transfer: "))
+                    self.current_customer.account.transfer(amount, target_customer.account)
+                else:
+                    print("Recipient customer ID not found.")
+            elif choice == '5':
+                print(f"Goodbye, {self.current_customer.name}!")
+                self.current_customer = None
+                break
+            else:
+                print("Invalid choice. Please try again.")
+
+
+atm = ATM()
+atm.add_customer("Ahmed", "1001", 500)
+atm.add_customer("Sara", "1002", 1000)
+atm.start()
